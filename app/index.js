@@ -4,7 +4,7 @@ import { Buffer } from 'buffer';
 import crypto from 'crypto';
 import blockdb from './blockdb';
 
-const normalizeInt = (n) => n.toString(16).split(/(?=(?:..)*$)/).reverse().join('');
+const normalizeInt = (n) => ("00000000" + n.toString(16)).slice(-8).split(/(?=(?:..)*$)/).reverse().join('');
 const normalizeHex = (str) => str.toString('hex').split(/(?=(?:..)*$)/).reverse().join('');
 
 const normalizeBlock = ({
@@ -37,6 +37,12 @@ const blockhash = (blockdata, nonce) => {
 
 
 class Hash extends React.Component {
+  constructor(props) {
+    super(props);
+    this.nonce = -1;
+    this.state = {percent: 0};
+  }
+  
   componentDidMount() {
     this.timerID = setInterval(
       () => this.tick(),
@@ -49,26 +55,26 @@ class Hash extends React.Component {
   }
 
   tick() {
-    this.nonce = 0;
-    this.target
-    this.setState({
-      date: new Date()
-    });
+    this.nonce = this.nonce + 1;
+    this.targetNonce = 2999858432;
+    
+    const hash = blockhash(blockdb[1], this.nonce);
+    
+    const percent = Math.floor(this.nonce / this.targetNonce * 100);
+    if (this.state.percent < percent) {
+      this.setState({
+        percent 
+      });
+    }
+  }
+  
+  render() {
+    return (
+      <div>{this.state.percent}% done</div>
+    );
   }
 
 }
-
-const Hash = () => {
-  //trying to check block 499512
-  const expectedhash = blockdb[0].hash;
-  const hash = blockhash(blockdb[0], 1473437695);
-  const checks =
-    hash === expectedhash ?
-      'ok' :
-      'err';
-  
-  return <div>{hash} {checks}</div>;
-};
 
 ReactDOM.render(
   <Hash />,
