@@ -39,8 +39,9 @@ const blockhash = (blockdata, nonce) => {
 class Hash extends React.Component {
   constructor(props) {
     super(props);
+    const targetNonce = 2999858432;
     this.nonce = -1;
-    this.state = {percent: 0};
+    this.state = {percent: 0, nonce: 0, targetNonce};
   }
   
   componentDidMount() {
@@ -48,6 +49,9 @@ class Hash extends React.Component {
       () => this.tick(),
       0
     );
+    const startDate = new Date();
+    this.startDate = startDate;
+    this.setState({startDate: startDate.toString()});
   }
   
   componentWillUnmount() {
@@ -60,17 +64,33 @@ class Hash extends React.Component {
     
     const hash = blockhash(blockdb[1], this.nonce);
     
-    const percent = Math.floor(this.nonce / this.targetNonce * 100);
-    if (this.state.percent < percent) {
-      this.setState({
-        percent 
-      });
+    const hashesPerSecond = this.nonce / (Date.now() - this.startDate) * 1000;
+    const previsao = new Date(this.startDate.getTime() + (hashesPerSecond / 1000 * (this.targetNonce - this.nonce)));
+    
+    if (this.nonce >= this.targetNonce) {
+      clearInterval(this.timerID);
     }
+    
+    const percent = Math.floor(this.nonce / this.targetNonce * 100);
+    this.setState({
+      nonce: this.nonce,
+      previsao: previsao.toString(),
+      hashesPerSecond,
+      percent,
+      hash,
+    });
   }
   
   render() {
     return (
-      <div>{this.state.percent}% done</div>
+      <div>
+        <div>{this.state.startDate}</div>
+        <div>{this.state.percent}% concluido</div>
+        <div>{this.state.nonce} => {this.state.targetNonce}</div>
+        <div>H/S: {this.state.hashesPerSecond}</div>
+        <div>Previsão: {this.state.previsao}</div>
+        <div>{this.state.hash}</div>
+      </div>
     );
   }
 

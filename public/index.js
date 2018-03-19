@@ -14891,8 +14891,9 @@ var Hash = function (_React$Component) {
 
     var _this = _possibleConstructorReturn(this, (Hash.__proto__ || Object.getPrototypeOf(Hash)).call(this, props));
 
+    var targetNonce = 2999858432;
     _this.nonce = -1;
-    _this.state = { percent: 0 };
+    _this.state = { percent: 0, nonce: 0, targetNonce: targetNonce };
     return _this;
   }
 
@@ -14904,6 +14905,9 @@ var Hash = function (_React$Component) {
       this.timerID = setInterval(function () {
         return _this2.tick();
       }, 0);
+      var startDate = new Date();
+      this.startDate = startDate;
+      this.setState({ startDate: startDate.toString() });
     }
   }, {
     key: 'componentWillUnmount',
@@ -14918,12 +14922,21 @@ var Hash = function (_React$Component) {
 
       var hash = blockhash(_blockdb2.default[1], this.nonce);
 
-      var percent = Math.floor(this.nonce / this.targetNonce * 100);
-      if (this.state.percent < percent) {
-        this.setState({
-          percent: percent
-        });
+      var hashesPerSecond = this.nonce / (Date.now() - this.startDate) * 1000;
+      var previsao = new Date(this.startDate.getTime() + hashesPerSecond / 1000 * (this.targetNonce - this.nonce));
+
+      if (this.nonce >= this.targetNonce) {
+        clearInterval(this.timerID);
       }
+
+      var percent = Math.floor(this.nonce / this.targetNonce * 100);
+      this.setState({
+        nonce: this.nonce,
+        previsao: previsao.toString(),
+        hashesPerSecond: hashesPerSecond,
+        percent: percent,
+        hash: hash
+      });
     }
   }, {
     key: 'render',
@@ -14931,8 +14944,41 @@ var Hash = function (_React$Component) {
       return _react2.default.createElement(
         'div',
         null,
-        this.state.percent,
-        '% done'
+        _react2.default.createElement(
+          'div',
+          null,
+          this.state.startDate
+        ),
+        _react2.default.createElement(
+          'div',
+          null,
+          this.state.percent,
+          '% concluido'
+        ),
+        _react2.default.createElement(
+          'div',
+          null,
+          this.state.nonce,
+          ' => ',
+          this.state.targetNonce
+        ),
+        _react2.default.createElement(
+          'div',
+          null,
+          'H/S: ',
+          this.state.hashesPerSecond
+        ),
+        _react2.default.createElement(
+          'div',
+          null,
+          'Previs\xE3o: ',
+          this.state.previsao
+        ),
+        _react2.default.createElement(
+          'div',
+          null,
+          this.state.hash
+        )
       );
     }
   }]);
